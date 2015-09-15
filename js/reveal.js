@@ -3423,7 +3423,9 @@
 				}
 
 				var fragmentsShown = [],
-					fragmentsHidden = [];
+				    fragmentsHidden = [],
+                                    fragmentsCurrent = [],
+                                    fragmentsNotCurrent = [];
 
 				toArray( fragments ).forEach( function( element, i ) {
 
@@ -3435,23 +3437,24 @@
 					if( i <= index ) {
 						if( !element.classList.contains( 'visible' ) ) fragmentsShown.push( element );
 						element.classList.add( 'visible' );
-						element.classList.remove( 'current-fragment' );
 
 						// Announce the fragments one by one to the Screen Reader
 						dom.statusDiv.textContent = element.textContent;
-
-						if( i === index ) {
-							element.classList.add( 'current-fragment' );
-						}
 					}
 					// Hidden fragments
 					else {
 						if( element.classList.contains( 'visible' ) ) fragmentsHidden.push( element );
 						element.classList.remove( 'visible' );
-						element.classList.remove( 'current-fragment' );
 					}
-
-
+                                    var isCurrent = i === index;
+                                    if (!isCurrent && element.classList.contains( 'current-fragment' )) {
+                                        element.classList.remove('current-fragment');
+                                        fragmentsNotCurrent.push(element);
+                                    }
+                                    if (isCurrent && !element.classList.contains( 'current-fragment' )) {
+                                        element.classList.add('current-fragment');
+                                        fragmentsCurrent.push(element);
+                                    }
 				} );
 
 				if( fragmentsHidden.length ) {
@@ -3461,6 +3464,14 @@
 				if( fragmentsShown.length ) {
 					dispatchEvent( 'fragmentshown', { fragment: fragmentsShown[0], fragments: fragmentsShown } );
 				}
+
+                            if( fragmentsNotCurrent.length ) {
+					dispatchEvent( 'fragmentnotcurrent', { fragment: fragmentsNotCurrent[0], fragments: fragmentsNotCurrent } );
+				}
+                            if( fragmentsCurrent.length ) {
+					dispatchEvent( 'fragmentcurrent', { fragment: fragmentsCurrent[0], fragments: fragmentsCurrent } );
+				}
+
 
 				updateControls();
 				updateProgress();
